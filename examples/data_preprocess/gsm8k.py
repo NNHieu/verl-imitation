@@ -54,20 +54,27 @@ if __name__ == "__main__":
     train_dataset = dataset["train"]
     test_dataset = dataset["test"]
 
-    instruction_following = 'Let\'s think step by step and output the final answer after "####".'
+    system_mgs = "You are a helpful assistant. The user will ask you a question and you as the assistant solve it. The assistant first thinks how to solve the task through reasoning and then provides the user with the final answer. The reasoning process and answer are enclosed within <think>...</think> and <answer>...</answer> tags, respectively"
+    instruction_following = ""
+    # instruction_following = 'Let\'s think step by step and output the final answer after "####".'
+    # instruction_following = "Please reason step by step, and put your final answer within \\boxed{{}}."
 
     # add a row to each data item that represents a unique id
     def make_map_fn(split):
         def process_fn(example, idx):
             question_raw = example.pop("question")
 
-            question = question_raw + " " + instruction_following
+            question = question_raw + instruction_following
 
             answer_raw = example.pop("answer")
             solution = extract_solution(answer_raw)
             data = {
-                "data_source": data_source,
+                "data_source": "gsm8k_box", # for box reward func
                 "prompt": [
+                    # {
+                    #     "role": "system",
+                    #     "content": system_mgs,
+                    # },
                     {
                         "role": "user",
                         "content": question,

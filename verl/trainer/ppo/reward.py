@@ -77,9 +77,9 @@ def get_custom_reward_fn(config: DictConfig) -> Optional[RawRewardFn]:
         RuntimeError: If there's an error loading the module from file.
         AttributeError: If the specified function name isn't found in the module.
     """
-
     reward_fn_config = config.get("custom_reward_function") or {}
     file_path = reward_fn_config.get("path")
+    print("Reward function config:", file_path)
     if not file_path:
         return None
 
