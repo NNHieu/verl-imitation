@@ -249,8 +249,12 @@ class RLHFDataset(Dataset):
                         traceback.print_exc()
                         return self.max_prompt_length + 1
 
+            prefix_len = 0
+            if self.thinking_prefix is not None and len(self.thinking_prefix) > 0:
+                prefix_len = len(tokenizer(self.thinking_prefix, add_special_tokens=False)["input_ids"])
+
             dataframe = dataframe.filter(
-                lambda doc: doc2len(doc) <= self.max_prompt_length,
+                lambda doc: doc2len(doc) + prefix_len <= self.max_prompt_length,
                 num_proc=self.num_workers,
                 desc=f"Filtering prompts longer than {self.max_prompt_length} tokens",
             )
