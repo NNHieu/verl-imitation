@@ -112,6 +112,10 @@ class RLHFDataset(Dataset):
         self.truncation = config.get("truncation", "error")
         self.filter_overlong_prompts = config.get("filter_overlong_prompts", True)
         self.apply_chat_template_kwargs = config.get("apply_chat_template_kwargs", {})
+        self.thinking_prefix = config.get("thinking_prefix")
+        if self.thinking_prefix is None:
+            self.thinking_prefix = ""
+
 
         self.tool_config_path = config.get("tool_config_path", None)
         self.tool_schemas = None
@@ -362,7 +366,7 @@ class RLHFDataset(Dataset):
                 )
             raw_prompt = self.tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True, tokenize=False, **self.apply_chat_template_kwargs
-            )
+            ) + self.thinking_prefix
             model_inputs = self.tokenizer(raw_prompt, return_tensors="pt", add_special_tokens=False)
             input_ids = model_inputs.pop("input_ids")
             attention_mask = model_inputs.pop("attention_mask")
