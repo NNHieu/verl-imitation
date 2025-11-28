@@ -20,6 +20,8 @@ from uuid import uuid4
 from verl.experimental.agent_loop.agent_loop import AgentLoopBase, AgentLoopOutput, register
 from verl.utils.profiler import simple_timer
 
+import random
+
 logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
 
@@ -90,7 +92,14 @@ class SingleTurnAgentWithPrefixLoop(AgentLoopBase):
         self.prompt_length = self.config.actor_rollout_ref.rollout.prompt_length
         self.response_length = self.config.actor_rollout_ref.rollout.response_length
         self.apply_chat_template_kwargs = self.config.data.get("apply_chat_template_kwargs", {})
-        self.thinking_prefix = self.config.data.get("thinking_prefix")
+        
+        self.thinking_prefixes = []
+        prefixes = self.config.data.get("thinking_prefixes")
+        if prefixes is not None and isinstance(prefixes, str):
+            prefixes = prefixes.split("||")
+            for prefix in prefixes:
+                if len(prefix) > 0:
+                    self.thinking_prefixes.append(prefix)
 
     async def run(self, sampling_params: dict[str, Any], **kwargs) -> AgentLoopOutput:
         messages = list(kwargs["raw_prompt"])
@@ -121,8 +130,10 @@ class SingleTurnAgentWithPrefixLoop(AgentLoopBase):
             )
         
         prefix_ids = []
-        if self.thinking_prefix is not None and isinstance(self.thinking_prefix, str) and len(self.thinking_prefix) > 0:
-            prefix_ids = self.tokenizer.encode(self.thinking_prefix, add_special_tokens=False)
+        if len(self.thinking_prefixes) > 0:
+            chosen_prefix_str = random.choice(self.thinking_prefixes)
+            if chosen_prefix_str != "<no_prefix>":
+                prefix_ids = self.tokenizer.encode(chosen_prefix_str, add_special_tokens=False)
         
         with simple_timer("generate_sequences", metrics):
             output = await self.server_manager.generate(
