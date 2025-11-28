@@ -130,7 +130,8 @@ class SingleTurnAgentWithPrefixLoop(AgentLoopBase):
             )
         
         prefix_ids = []
-        if len(self.thinking_prefixes) > 0:
+        is_validate = kwargs.get("_validate", False)
+        if not is_validate and len(self.thinking_prefixes) > 0:
             chosen_prefix_str = random.choice(self.thinking_prefixes)
             if chosen_prefix_str != "<no_prefix>":
                 prefix_ids = self.tokenizer.encode(chosen_prefix_str, add_special_tokens=False)
