@@ -115,6 +115,8 @@ class RLHFDataset(Dataset):
         self.thinking_prefix = config.get("thinking_prefix")
         if self.thinking_prefix is None:
             self.thinking_prefix = ""
+        
+        print("Thinking prefix: ", self.thinking_prefix)
 
 
         self.tool_config_path = config.get("tool_config_path", None)
@@ -308,7 +310,7 @@ class RLHFDataset(Dataset):
 
             raw_prompt = self.processor.apply_chat_template(
                 messages, add_generation_prompt=True, tokenize=False, **self.apply_chat_template_kwargs
-            )
+            ) + self.thining_prefix
             multi_modal_data = {}
 
             images = None

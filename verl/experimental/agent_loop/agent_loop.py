@@ -95,6 +95,7 @@ class AsyncLLMServerManager:
         prompt_ids: list[int],
         sampling_params: dict[str, Any],
         image_data: Optional[list[Any]] = None,
+        prefix_ids: list[int] = [],
     ) -> TokenOutput:
         """Generate tokens from prompt ids.
 
@@ -112,6 +113,7 @@ class AsyncLLMServerManager:
             prompt_ids=prompt_ids,
             sampling_params=sampling_params,
             image_data=image_data,
+            prefix_ids=prefix_ids,
         )
         return output
 

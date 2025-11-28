@@ -314,7 +314,7 @@ class TaskRunner:
             max_samples=config.data.get("train_max_samples", -1),
         )
         print(train_dataset)
-        print(train_dataset[0])
+        print(tokenizer.decode(train_dataset[0]['input_ids']))
 
         val_dataset = create_rl_dataset(
             config.data.val_files,
@@ -327,26 +327,26 @@ class TaskRunner:
         train_sampler = create_rl_sampler(config.data, train_dataset)
         # breakpoint()
 
-        # # Initialize the PPO trainer.
-        # trainer = RayPPOTrainer(
-        #     config=config,
-        #     tokenizer=tokenizer,
-        #     processor=processor,
-        #     role_worker_mapping=self.role_worker_mapping,
-        #     resource_pool_manager=resource_pool_manager,
-        #     ray_worker_group_cls=ray_worker_group_cls,
-        #     reward_fn=reward_fn,
-        #     val_reward_fn=val_reward_fn,
-        #     train_dataset=train_dataset,
-        #     val_dataset=val_dataset,
-        #     collate_fn=collate_fn,
-        #     train_sampler=train_sampler,
-        # )
-        # # Initialize the workers of the trainer.
-        # trainer.init_workers()
+        # Initialize the PPO trainer.
+        trainer = RayPPOTrainer(
+            config=config,
+            tokenizer=tokenizer,
+            processor=processor,
+            role_worker_mapping=self.role_worker_mapping,
+            resource_pool_manager=resource_pool_manager,
+            ray_worker_group_cls=ray_worker_group_cls,
+            reward_fn=reward_fn,
+            val_reward_fn=val_reward_fn,
+            train_dataset=train_dataset,
+            val_dataset=val_dataset,
+            collate_fn=collate_fn,
+            train_sampler=train_sampler,
+        )
+        # Initialize the workers of the trainer.
+        trainer.init_workers()
 
-        # # Start the training process.
-        # trainer.fit()
+        # Start the training process.
+        trainer.fit()
 
 
 def create_rl_dataset(data_paths, data_config, tokenizer, processor, is_train=True, max_samples: int = -1):
