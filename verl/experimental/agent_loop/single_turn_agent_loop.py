@@ -198,7 +198,7 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
         if prefixes is not None and isinstance(prefixes, str):
             prefixes = prefixes.split("||")
             for i, prefix in enumerate(prefixes):
-                assert len(prefix) > 0
+                # assert len(prefix) > 0
                 self.thinking_prefixes.append((i, prefix))
         assert len(self.thinking_prefixes) > 1
 
