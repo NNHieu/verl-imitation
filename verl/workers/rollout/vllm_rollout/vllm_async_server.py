@@ -18,6 +18,7 @@ import logging
 import os
 from pprint import pprint
 from typing import Any, Callable, Optional
+from vllm.logprobs import Logprob
 
 import cloudpickle as pickle
 import numpy as np
@@ -377,6 +378,8 @@ class vLLMHttpServerBase:
         request_id: str,
         image_data: Optional[list[Any]] = None,
         prefix_ids: list[int] = [],
+        probing_topk_first_tokens: Optional[int] = None,
+        compute_logprob_only: bool = False
     ) -> TokenOutput:
         """Generate sequence with token-in-token-out."""
         # TODO(@wuxibin): switch to `/generate` http endpoint once multi-modal support ready.
@@ -389,8 +392,9 @@ class vLLMHttpServerBase:
         sampling_params = SamplingParams(max_tokens=max_tokens, **sampling_params)
         prompt_ids = _qwen2_5_vl_dedup_image_tokens(prompt_ids, self.model_config.processor)
         
+        prompt_token_ids = prompt_ids + prefix_ids
         prompt = TokensPrompt(
-            prompt_token_ids=prompt_ids + prefix_ids, multi_modal_data={"image": image_data} if image_data else None
+            prompt_token_ids=prompt_token_ids, multi_modal_data={"image": image_data} if image_data else None
         )
 
         # Add lora request
@@ -403,26 +407,77 @@ class vLLMHttpServerBase:
                     lora_name=VLLM_LORA_NAME, lora_int_id=VLLM_LORA_INT_ID, lora_path=VLLM_LORA_PATH
                 )
 
-        generator = self.engine.generate(
-            prompt=prompt, sampling_params=sampling_params, request_id=request_id, lora_request=lora_request
-        )
+        if probing_topk_first_tokens is not None and probing_topk_first_tokens > 0:
+            sampling_params = SamplingParams(
+                max_tokens=1,
+                n=1,
+                top_p=1.0,
+                top_k=probing_topk_first_tokens,
+                logprobs=probing_topk_first_tokens)
+            generator = self.engine.generate(
+                prompt=prompt, 
+                sampling_params=sampling_params, 
+                request_id=request_id, 
+                lora_request=lora_request
+            )
+            final_res: Optional[RequestOutput] = None
+            async for output in generator:
+                final_res = output
+            assert final_res is not None
+            candidates = [(tok_id, logprobs_info.logprob) for tok_id, logprobs_info in final_res.outputs[0].logprobs[0].items()]
+            candidates_ids = [c[0] for c in candidates]
+            candidates_log_probs = [c[1] for c in candidates]
+            return TokenOutput(token_ids=candidates_ids, log_probs=candidates_log_probs)
 
-        # Get final response
-        final_res: Optional[RequestOutput] = None
-        async for output in generator:
-            final_res = output
-        assert final_res is not None
+        elif compute_logprob_only:
+            sampling_params = SamplingParams(
+                max_tokens=1,
+                n=1,
+                top_p=1.0,
+                top_k=1,
+                prompt_logprobs=0,
+                logprobs=0)
+            generator = self.engine.generate(
+                prompt=prompt, 
+                sampling_params=sampling_params, 
+                request_id=request_id, 
+                lora_request=lora_request
+            )
+            final_res: Optional[RequestOutput] = None
+            async for output in generator:
+                final_res = output
+            assert final_res is not None
 
-        token_ids = final_res.outputs[0].token_ids
-        log_probs = None
-        if sampling_params.logprobs is not None:
-            # Get prefix_log_probs from prompt log_probs
-            log_probs = [logprobs[token_ids[i]].logprob for i, logprobs in enumerate(final_res.outputs[0].logprobs)]
-            if prefix_ids:
-                prefix_log_probs = [logprobs[prefix_ids[i]].logprob for i, logprobs in enumerate(final_res.outputs[0].prompt_logprobs[-len(prefix_ids):])]
-                log_probs = prefix_log_probs + log_probs
-        token_ids = prefix_ids + token_ids
-        return TokenOutput(token_ids=token_ids, log_probs=log_probs)
+            prompt_logprobs_obj = final_res.prompt_logprobs[-len(prompt_token_ids):]
+            # print("------ logprobs -------")
+            # print(prompt_logprobs_obj[:10])
+            # print(prompt_token_ids[:10])
+            # print(len(prompt_logprobs_obj), len(prompt_token_ids))
+            prompt_log_probs = [float('nan')] + [logprobs[prompt_token_ids[i + 1]].logprob for i, logprobs in enumerate[dict[int, Logprob] | None](prompt_logprobs_obj[1:])]
+            return TokenOutput(token_ids=prompt_token_ids, 
+                                log_probs=prompt_log_probs)
+
+        else:
+            generator = self.engine.generate(
+                prompt=prompt, sampling_params=sampling_params, request_id=request_id, lora_request=lora_request
+            )
+
+            # Get final response
+            final_res: Optional[RequestOutput] = None
+            async for output in generator:
+                final_res = output
+            assert final_res is not None
+
+            token_ids = final_res.outputs[0].token_ids
+            log_probs = None
+            if sampling_params.logprobs is not None:
+                # Get prefix_log_probs from prompt log_probs
+                log_probs = [logprobs[token_ids[i]].logprob for i, logprobs in enumerate(final_res.outputs[0].logprobs)]
+                if prefix_ids:
+                    prefix_log_probs = [logprobs[prefix_ids[i]].logprob for i, logprobs in enumerate(final_res.prompt_logprobs[-len(prefix_ids):])]
+                    log_probs = prefix_log_probs + log_probs
+            token_ids = prefix_ids + token_ids
+            return TokenOutput(token_ids=token_ids, log_probs=log_probs)
 
     async def wake_up(self):
         if self.rollout_mode == RolloutMode.HYBRID:

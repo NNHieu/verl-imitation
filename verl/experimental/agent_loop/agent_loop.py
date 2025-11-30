@@ -96,6 +96,8 @@ class AsyncLLMServerManager:
         sampling_params: dict[str, Any],
         image_data: Optional[list[Any]] = None,
         prefix_ids: list[int] = [],
+        probing_topk_first_tokens: Optional[int] = None,
+        compute_logprob_only: bool = False,
     ) -> TokenOutput:
         """Generate tokens from prompt ids.
 
@@ -114,6 +116,8 @@ class AsyncLLMServerManager:
             sampling_params=sampling_params,
             image_data=image_data,
             prefix_ids=prefix_ids,
+            probing_topk_first_tokens=probing_topk_first_tokens,
+            compute_logprob_only=compute_logprob_only,
         )
         return output
 
@@ -526,6 +530,13 @@ class AgentLoopWorkerBase:
                     non_tensor_batch=non_tensor_batch,
                 )
                 result = await self.reward_manager_worker.compute_score.remote(data)
+                if output.extra_fields.get("swap_prefix_perplexity"):
+                    result["reward_score"] *= min(output.extra_fields.get("swap_prefix_perplexity"), 
+                                                  self.config.actor_rollout_ref.rollout.agent.get("scale_reward_clipping", 2))
+                    print("Reward after scale:", result["reward_score"])
+                    # TODO: normalize swap_prefix_perplexity
+                    if isinstance(result["reward_extra_info"], dict):
+                        result["reward_extra_info"]['swap_prefix_perplexity'] = output.extra_fields.get("swap_prefix_perplexity")
                 output.reward_score = result["reward_score"]
                 output.extra_fields["reward_extra_info"] = result["reward_extra_info"]
 

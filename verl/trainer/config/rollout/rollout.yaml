@@ -202,6 +202,8 @@ agent:
   # Required when using verl.utils.omega_conf_to_dataclass to instantiate dataclass configs
   _target_: verl.workers.config.AgentLoopConfig
 
+  scale_reward_clipping: null
+
   # Number of agent loop workers
   num_workers: 8
 
