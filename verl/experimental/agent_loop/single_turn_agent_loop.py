@@ -251,12 +251,13 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
             if not is_validate:
                 print(self.tokenizer.decode(output.token_ids[:20]))
                 other_perplexities = []
+                solution_ids = output.token_ids[len(prefix_ids):]
                 for (other_index, other_prefix_str) in self.thinking_prefixes:
                     if other_index == chosen_index:
                         continue
 
                     print("Swaping from", chosen_prefix_str, "to", other_prefix_str)
-                    swap_prefix_output_token_ids = other_prefix_ids + output.token_ids[len(prefix_ids):]
+                    swap_prefix_output_token_ids = other_prefix_ids + solution_ids
                     swap_prefix_output_token_ids = swap_prefix_output_token_ids[:self.response_length]
                     logprob_output = await self.server_manager.generate(
                         request_id=request_id, 
@@ -265,8 +266,9 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
                         image_data=image_data,
                         compute_logprob_only=True,
                     )
-                    swap_prefix_output_logprobs = logprob_output.log_probs[-len(swap_prefix_output_token_ids):]
-                    swap_prefix_perplexity = math.exp(-sum(swap_prefix_output_logprobs) / len(swap_prefix_output_logprobs))
+                    
+                    swap_prefix_output_logprobs = logprob_output.log_probs[-len(solution_ids):]
+                    swap_prefix_perplexity = math.exp(-sum(swap_prefix_output_logprobs) / len(solution_ids))
                     other_perplexities.append(swap_prefix_perplexity)
                 print(other_perplexities)
                 smallest_perplexity = min(other_perplexities) - 1
