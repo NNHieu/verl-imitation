@@ -203,6 +203,8 @@ agent:
   _target_: verl.workers.config.AgentLoopConfig
 
   scale_reward_clipping: null
+  # GPT2 perplexity
+  perplexity_discard_threshold: 18
 
   # Number of agent loop workers
   num_workers: 8

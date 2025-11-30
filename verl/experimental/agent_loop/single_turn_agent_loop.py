@@ -191,6 +191,7 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
         self.prompt_length = self.config.actor_rollout_ref.rollout.prompt_length
         self.response_length = self.config.actor_rollout_ref.rollout.response_length
         self.apply_chat_template_kwargs = self.config.data.get("apply_chat_template_kwargs", {})
+        self.perplexity_discard_threshold = self.config.actor_rollout_ref.rollout.agent.get("perplexity_discard_threshold", 16) # GPT2 perplexity
         
         self.thinking_prefixes = []
         prefixes = self.config.data.get("thinking_prefix")
@@ -271,8 +272,8 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
                     assert len(logprob_output.log_probs) == (len(prompt_ids) + len(swap_prefix_output_token_ids))
                     swap_prefix_output_logprobs = logprob_output.log_probs[-len(solution_ids):]
                     swap_prefix_perplexity = math.exp(-sum(swap_prefix_output_logprobs) / len(solution_ids))
-                    if math.isnan(swap_prefix_perplexity) or swap_prefix_perplexity < 1:
-                        print("Warning: swap_prefix_perplexity is NaN")
+                    if math.isnan(swap_prefix_perplexity) or swap_prefix_perplexity < 1 or swap_prefix_perplexity > self.perplexity_discard_threshold:
+                        print("Warning: swap_prefix_perplexity is NaN, < 1 or too hight")
                         swap_prefix_perplexity = 1
                     other_perplexities.append(swap_prefix_perplexity)
                 print(other_perplexities)
