@@ -271,7 +271,7 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
                     assert len(logprob_output.log_probs) == (len(prompt_ids) + len(swap_prefix_output_token_ids))
                     swap_prefix_output_logprobs = logprob_output.log_probs[-len(solution_ids):]
                     swap_prefix_perplexity = math.exp(-sum(swap_prefix_output_logprobs) / len(solution_ids))
-                    if math.isnan(swap_prefix_perplexity):
+                    if math.isnan(swap_prefix_perplexity) or swap_prefix_perplexity < 1:
                         print("Warning: swap_prefix_perplexity is NaN")
                         swap_prefix_perplexity = 1
                     other_perplexities.append(swap_prefix_perplexity)
