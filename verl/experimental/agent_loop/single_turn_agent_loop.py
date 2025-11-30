@@ -253,7 +253,7 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
                 other_perplexities = []
                 solution_ids = output.token_ids[len(prefix_ids):]
                 for (other_index, other_prefix_str) in self.thinking_prefixes:
-                    if other_index == chosen_index:
+                    if other_index >= chosen_index:
                         continue
                     
                     print("Swaping from", chosen_prefix_str, "to", other_prefix_str)
@@ -276,8 +276,12 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
                         print("Warning: swap_prefix_perplexity is NaN, < 1 or too hight")
                         swap_prefix_perplexity = 1
                     other_perplexities.append(swap_prefix_perplexity)
+                
                 print(other_perplexities)
-                smallest_perplexity = min(other_perplexities) - 1
+                if len(other_perplexities) == 0:
+                    smallest_perplexity = 1
+                else:
+                    smallest_perplexity = min(other_perplexities) - 1
         
         # print("-----------------")
         # print(f"Outputs from single_turn_agent_with_prefix:")
