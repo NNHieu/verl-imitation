@@ -72,6 +72,7 @@ class AgentLoopConfig(BaseConfig):
     agent_loop_config_path: Optional[str] = None
     custom_async_server: CustomAsyncServerConfig = field(default_factory=CustomAsyncServerConfig)
     scale_reward_clipping: Optional[float] = None
+    perplexity_discard_threshold: float = 18
 
 
 @dataclass
