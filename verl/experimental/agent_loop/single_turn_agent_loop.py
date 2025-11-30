@@ -236,9 +236,8 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
         with simple_timer("generate_sequences", metrics):
             prefix_ids = []
             if not is_validate:
-                (chosen_index, chosen_prefix_str), (other_index, other_prefix_str) = random.sample(self.thinking_prefixes, 2)
+                chosen_index, chosen_prefix_str = random.choice(self.thinking_prefixes)
                 prefix_ids = self.tokenizer.encode(chosen_prefix_str, add_special_tokens=False)
-                other_prefix_ids = self.tokenizer.encode(other_prefix_str, add_special_tokens=False)
 
             output = await self.server_manager.generate(
                 request_id=request_id, 
@@ -255,20 +254,26 @@ class SingleTurnCompetitiveAgentLoop(AgentLoopBase):
                 for (other_index, other_prefix_str) in self.thinking_prefixes:
                     if other_index == chosen_index:
                         continue
-
+                    
                     print("Swaping from", chosen_prefix_str, "to", other_prefix_str)
+                    other_prefix_ids = self.tokenizer.encode(other_prefix_str, add_special_tokens=False)
                     swap_prefix_output_token_ids = other_prefix_ids + solution_ids
                     swap_prefix_output_token_ids = swap_prefix_output_token_ids[:self.response_length]
+                    
+                    prob_request_id = uuid4().hex
                     logprob_output = await self.server_manager.generate(
-                        request_id=request_id, 
+                        request_id=prob_request_id, 
                         prompt_ids=prompt_ids + swap_prefix_output_token_ids, 
                         sampling_params=sampling_params, 
                         image_data=image_data,
                         compute_logprob_only=True,
                     )
-                    
+                    assert len(logprob_output.log_probs) == (len(prompt_ids) + len(swap_prefix_output_token_ids))
                     swap_prefix_output_logprobs = logprob_output.log_probs[-len(solution_ids):]
                     swap_prefix_perplexity = math.exp(-sum(swap_prefix_output_logprobs) / len(solution_ids))
+                    if math.isnan(swap_prefix_perplexity):
+                        print("Warning: swap_prefix_perplexity is NaN")
+                        swap_prefix_perplexity = 1
                     other_perplexities.append(swap_prefix_perplexity)
                 print(other_perplexities)
                 smallest_perplexity = min(other_perplexities) - 1
