@@ -1,0 +1,20 @@
+{
+  "data_source": "star_graph",
+  "prompt": [
+    {
+      "content": "Let G be an undirected graph with edge set {(49,13), (23,28), (46,35), (32,42), (35,32), (42,22), (13,23), (46,49)}. Find a path from vertex 46 to vertex 22. Express your final answer in the form \\boxed{v1,v2,...,vk}, where each vertex is separated by a comma.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "46,35,32,42,22",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "One valid route is \\boxed{46,35,32,42,22}.",
+    "index": 0,
+    "question": "Let G be an undirected graph with edge set {(49,13), (23,28), (46,35), (32,42), (35,32), (42,22), (13,23), (46,49)}. Find a path from vertex 46 to vertex 22. Express your final answer in the form \\boxed{v1,v2,...,vk}, where each vertex is separated by a comma.",
+    "split": "train"
+  }
+}

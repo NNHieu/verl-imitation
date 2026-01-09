@@ -1,0 +1,21 @@
+{
+  "type": "gsm_mathinstruct1",
+  "data_source": "meta-math/MetaMathQA-40K",
+  "prompt": [
+    {
+      "content": "Marlon had 42 lollipops in the beginning. On his way home, he saw Emily and gave her 2/3 of his lollipops. Then, Marlon kept 4 lollipops and gave the rest to Lou. How many lollipops did Lou receive? Let's think step by step and output the final answer within \\boxed{}.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "NA",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "Let's solve this problem using Python code.\n<llm-code>\noriginal_num = 42\namount_given_to_emily = original_num * 2 / 3\namount_retained_by_marlon = 4\nlollipops_given_to_lou = original_num - amount_given_to_emily - amount_retained_by_marlon\nlollipops_given_to_lou\n</llm-code>\n<llm-code-output>\n10.0\n</llm-code-output>",
+    "index": 0,
+    "question": "Marlon had 42 lollipops in the beginning. On his way home, he saw Emily and gave her 2/3 of his lollipops. Then, Marlon kept 4 lollipops and gave the rest to Lou. How many lollipops did Lou receive? Let's think step by step and output the final answer within \\boxed{}.",
+    "split": "train"
+  }
+}

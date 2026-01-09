@@ -1,0 +1,20 @@
+{
+  "data_source": "star_graph",
+  "prompt": [
+    {
+      "content": "Let G be an undirected graph with edge set {(32,3), (16,12), (3,19), (32,34), (34,6), (6,16), (19,47), (47,28)}. Find a path from vertex 32 to vertex 12. Express your final answer in the form \\boxed{v1,v2,...,vk}, where each vertex is separated by a comma.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "32,34,6,16,12",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "A possible path is \\boxed{32,34,6,16,12}.",
+    "index": 0,
+    "question": "Let G be an undirected graph with edge set {(32,3), (16,12), (3,19), (32,34), (34,6), (6,16), (19,47), (47,28)}. Find a path from vertex 32 to vertex 12. Express your final answer in the form \\boxed{v1,v2,...,vk}, where each vertex is separated by a comma.",
+    "split": "test"
+  }
+}

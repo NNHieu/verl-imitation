@@ -1,0 +1,21 @@
+{
+  "graph_query": "g=+d|h=-v|t=+g|q=-d|w=-q|v=-w|y=+t|i=-y/d=+1,h=?",
+  "data_source": "star_graph",
+  "prompt": [
+    {
+      "content": "You are given a signed graph where nodes represent variables and edges represent multiplicative relationships of +1 or -1. The rules are: g is identical to d, h is defined as the negative of v, t is identical to g, q is equal to minus d, w is the negative of q, v is the negation of w, y is identical to t, i is defined as the negative of y. Assuming d = 1, compute the value of h. Let's think step by step and output the final answer within \\boxed{}.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "q=-d=-1,w=-q=+1,v=-w=-1,h=-v=+1",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "Starting from the given value, we propagate the relationships step by step.\nq = -d, so q = -1\nw is the negation of q, so w = 1\nv is equal to minus w, so v = -1\nh is the negation of v, so h = 1.\nTherefore, the value of h is \\boxed{1}.",
+    "index": 0,
+    "question": "You are given a signed graph where nodes represent variables and edges represent multiplicative relationships of +1 or -1. The rules are: g is identical to d, h is defined as the negative of v, t is identical to g, q is equal to minus d, w is the negative of q, v is the negation of w, y is identical to t, i is defined as the negative of y. Assuming d = 1, compute the value of h. Let's think step by step and output the final answer within \\boxed{}.",
+    "split": "test"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "graph_query": "e=+f|a=-v|j=-e|h=+i|t=+h|v=+t|d=+j|n=-d/i=-1,a=?",
+  "data_source": "star_graph",
+  "prompt": [
+    {
+      "content": "Consider a system of variables where each variable is defined as either the positive or negative of another variable. The relationships are given as follows: e is the positive of f; a is defined as the negative of v; j is defined as the negative of e; h is the positive of i; t is the positive of h; v is the positive of t; d is identical to j; n is defined as the negative of d. If the value of i is -1, determine the value of a. Let's think step by step and output the final answer within \\boxed{}.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "h=+i=-1,t=+h=-1,v=+t=-1,a=-v=+1",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "Starting from the given value, we propagate the relationships step by step.\nh is identical to i, so h = -1\nt is equal to h, so t = -1\nv is equal to t, so v = -1\na is defined as the negative of v, so a = 1.\nTherefore, the value of a is \\boxed{1}.",
+    "index": 0,
+    "question": "Consider a system of variables where each variable is defined as either the positive or negative of another variable. The relationships are given as follows: e is the positive of f; a is defined as the negative of v; j is defined as the negative of e; h is the positive of i; t is the positive of h; v is the positive of t; d is identical to j; n is defined as the negative of d. If the value of i is -1, determine the value of a. Let's think step by step and output the final answer within \\boxed{}.",
+    "split": "test"
+  }
+}

@@ -748,53 +748,54 @@ class FSDPSFTTrainer:
         train_time = 0
         for epoch in range(start_epoch, self.config.trainer.total_epochs):
             self.train_sampler.set_epoch(epoch=epoch)
-
-            for step_in_epoch, data in enumerate(
-                tqdm(
-                    self.train_dataloader,
-                    initial=global_step % self.steps_per_epoch if epoch == start_epoch else 0,
-                    total=self.steps_per_epoch,
-                    desc=f"Epoch {epoch + 1}/{self.config.trainer.total_epochs}",
-                    disable=rank != 0,
-                )
-            ):
-                global_step += 1
-                data = TensorDict(data, batch_size=self.config.data.train_batch_size).to(self.device_name)
-                metric = self.training_step(data)
-                train_time += metric["train/time(s)"]
-                if rank == 0:
-                    tracking.log(data=metric, step=global_step)
-
-                is_last_step = global_step >= self.total_training_steps
-                is_valid_step = global_step % self.config.trainer.test_freq == 0
-                is_save_step = global_step % self.config.trainer.save_freq == 0
-
-                # early exit or validation step
-                if is_last_step or (self.config.trainer.test_freq > 0 and is_valid_step):
-                    # Perform validation
-                    val_losses = []
-                    for val_data in self.val_dataloader:
-                        val_data = TensorDict(val_data, batch_size=self.config.data.micro_batch_size_per_gpu).to(
-                            self.device_name
-                        )
-                        val_loss = self.validation_step(val_data)
-                        val_losses.append(val_loss)
+            resume_from_the_end_of_loader = True
+            while resume_from_the_end_of_loader:
+                for step_in_epoch, data in enumerate(
+                    tqdm(
+                        self.train_dataloader,
+                        initial=global_step % self.steps_per_epoch if epoch == start_epoch else 0,
+                        total=self.steps_per_epoch,
+                        desc=f"Epoch {epoch + 1}/{self.config.trainer.total_epochs}",
+                        disable=rank != 0,
+                    )
+                ):
+                    resume_from_the_end_of_loader = False
+                    global_step += 1
+                    data = TensorDict(data, batch_size=self.config.data.train_batch_size).to(self.device_name)
+                    metric = self.training_step(data)
+                    train_time += metric["train/time(s)"]
                     if rank == 0:
-                        val_loss = torch.mean(torch.stack(val_losses))
-                        metric = {"val/loss": val_loss.detach().item()}
                         tracking.log(data=metric, step=global_step)
-                        last_valid_metric = metric
-                    torch.distributed.barrier()
 
-                if is_last_step or (self.config.trainer.save_freq > 0 and is_save_step):
-                    self.save_checkpoint(step=global_step)
+                    is_last_step = global_step >= self.total_training_steps
+                    is_valid_step = global_step % self.config.trainer.test_freq == 0
+                    is_save_step = global_step % self.config.trainer.save_freq == 0
 
-                if is_last_step:
-                    if rank == 0:
-                        print(f"Total time for train steps: {train_time:.2f}s")
-                        print(f"Final validation metrics: {last_valid_metric}")
-                    return
+                    # early exit or validation step
+                    if is_last_step or (self.config.trainer.test_freq > 0 and is_valid_step):
+                        # Perform validation
+                        val_losses = []
+                        for val_data in self.val_dataloader:
+                            val_data = TensorDict(val_data, batch_size=self.config.data.micro_batch_size_per_gpu).to(
+                                self.device_name
+                            )
+                            val_loss = self.validation_step(val_data)
+                            val_losses.append(val_loss)
+                        if rank == 0:
+                            val_loss = torch.mean(torch.stack(val_losses))
+                            metric = {"val/loss": val_loss.detach().item()}
+                            tracking.log(data=metric, step=global_step)
+                            last_valid_metric = metric
+                        torch.distributed.barrier()
 
+                    if is_last_step or (self.config.trainer.save_freq > 0 and is_save_step):
+                        self.save_checkpoint(step=global_step)
+
+                    if is_last_step:
+                        if rank == 0:
+                            print(f"Total time for train steps: {train_time:.2f}s")
+                            print(f"Final validation metrics: {last_valid_metric}")
+                        return
 
 def run_sft(config):
     device_name = get_device_name()
@@ -811,7 +812,10 @@ def run_sft(config):
     from verl.utils import hf_tokenizer
 
     local_model_path = copy_to_local(src=config.model.partial_pretrain, verbose=True)
-    tokenizer = hf_tokenizer(local_model_path, trust_remote_code=config.model.trust_remote_code)
+    tokenizer_path = config.model.get("tokenizer_path")
+    if tokenizer_path is None:
+        tokenizer_path = local_model_path
+    tokenizer = hf_tokenizer(tokenizer_path, trust_remote_code=config.model.trust_remote_code)
     train_dataset = create_sft_dataset(
         config.data.train_files, config.data, tokenizer, max_samples=config.data.get("train_max_samples", -1)
     )

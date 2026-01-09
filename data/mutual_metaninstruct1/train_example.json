@@ -1,0 +1,21 @@
+{
+  "type": "gsm_mathinstruct1",
+  "data_source": "meta-math/MetaMathQA-40K",
+  "prompt": [
+    {
+      "content": "A fan can create an airflow of 10 liters per second. If the fan works for 10 minutes each day, calculate the amount of airflow it will create in one week. Let's think step by step and output the final answer within \\boxed{}.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "NA",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "Let's solve this problem using Python code.\n<llm-code>\nair_per_second = 10\nseconds_per_minute = 60\nminutes_per_day = 10\ndays_per_week = 7\n\nair_per_week = air_per_second * seconds_per_minute * minutes_per_day * days_per_week\n\nair_per_week\n</llm-code>\n<llm-code-output>\n42000\n</llm-code-output>",
+    "index": 0,
+    "question": "A fan can create an airflow of 10 liters per second. If the fan works for 10 minutes each day, calculate the amount of airflow it will create in one week. Let's think step by step and output the final answer within \\boxed{}.",
+    "split": "train"
+  }
+}

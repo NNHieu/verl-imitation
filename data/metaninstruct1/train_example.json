@@ -1,0 +1,21 @@
+{
+  "type": "gsm_mathinstruct1",
+  "data_source": "meta-math/MetaMathQA-40K",
+  "prompt": [
+    {
+      "content": "Mark is baking bread. He has to let it rise for 120 minutes twice. He also needs to spend 10 minutes kneading it and 30 minutes baking it. How many minutes does it take Mark to finish making the bread? Let's think step by step and output the final answer within \\boxed{}.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "NA",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "The time to finish the bread consists of two stages: the first rise, kneading, the second rise, and the baking. Let's compute each stage individually.\n<llm-code>\nfirst_rise_time = 120\nkneading_time = 10\nsecond_rise_time = 120\nbaking_time = 30\ntotal_time = first_rise_time + kneading_time + second_rise_time + baking_time\ntotal_time\n</llm-code>\n<llm-code-output>\n280\n</llm-code-output>",
+    "index": 0,
+    "question": "Mark is baking bread. He has to let it rise for 120 minutes twice. He also needs to spend 10 minutes kneading it and 30 minutes baking it. How many minutes does it take Mark to finish making the bread? Let's think step by step and output the final answer within \\boxed{}.",
+    "split": "train"
+  }
+}

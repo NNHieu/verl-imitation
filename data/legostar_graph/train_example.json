@@ -1,0 +1,21 @@
+{
+  "graph_query": "z=+h|v=+n|b=+c|o=-i|i=-b|g=-o|n=-z|h=+c/c=+1,g=?",
+  "data_source": "star_graph",
+  "prompt": [
+    {
+      "content": "A dependency graph connects variables using edges with weights +1 or -1. Each edge indicates whether one variable equals another or its negation. The relationships are: z is equal to h, v is equal to n, b = +c, o is defined as the negative of i, i is defined as the negative of b, g is the negation of o, n is defined as the negative of z, h is equal to c. Given that c = 1, find the value of g. Let's think step by step and output the final answer within \\boxed{}.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "b=+c=+1,i=-b=-1,o=-i=+1,g=-o=-1",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "By following the signed relationships between variables, we obtain:\nb is the positive of c, so b = 1\ni is the negative of b, so i = -1\no is the negation of i, so o = 1\ng = -o, so g = -1.\nThis shows that g has value \\boxed{-1}.",
+    "index": 0,
+    "question": "A dependency graph connects variables using edges with weights +1 or -1. Each edge indicates whether one variable equals another or its negation. The relationships are: z is equal to h, v is equal to n, b = +c, o is defined as the negative of i, i is defined as the negative of b, g is the negation of o, n is defined as the negative of z, h is equal to c. Given that c = 1, find the value of g. Let's think step by step and output the final answer within \\boxed{}.",
+    "split": "train"
+  }
+}

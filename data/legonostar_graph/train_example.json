@@ -1,0 +1,21 @@
+{
+  "graph_query": "j=-r|x=+s|i=-g|z=+d|d=-i|b=+z|s=+j|r=-l/g=-1,b=?",
+  "data_source": "star_graph",
+  "prompt": [
+    {
+      "content": "You are given a signed graph where nodes represent variables and edges represent multiplicative relationships of +1 or -1. The rules are: j is the negative of r, x is the positive of s, i is the negation of g, z is identical to d, d is defined as the negative of i, b = +z, s = +j, r = -l. Assuming g = -1, compute the value of b. Let's think step by step and output the final answer within \\boxed{}.",
+      "role": "user"
+    }
+  ],
+  "ability": "math",
+  "reward_model": {
+    "ground_truth": "i=-g=+1,d=-i=-1,z=+d=-1,b=+z=-1",
+    "style": "rule"
+  },
+  "extra_info": {
+    "answer": "By following the signed relationships between variables, we obtain:\ni = -g, so i = 1\nd is the negative of i, so d = -1\nz is the positive of d, so z = -1\nb = +z, so b = -1.\nThis shows that b has value \\boxed{-1}.",
+    "index": 0,
+    "question": "You are given a signed graph where nodes represent variables and edges represent multiplicative relationships of +1 or -1. The rules are: j is the negative of r, x is the positive of s, i is the negation of g, z is identical to d, d is defined as the negative of i, b = +z, s = +j, r = -l. Assuming g = -1, compute the value of b. Let's think step by step and output the final answer within \\boxed{}.",
+    "split": "train"
+  }
+}
